@@ -6,5 +6,5 @@ set -x
 
 pipx uninstall-all
 docker rm -f gotest
-rm -rf zkevm-chain-testing
-
+#rm -rf zkevm-chain-testing
+rm -rf taframework
