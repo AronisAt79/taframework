@@ -4,6 +4,7 @@ set -e
 
 USER=$(whoami)
 ENV_FILE_NAME="environment.json"
+BROWNIE="/home/$USER/.local/bin/brownie"
 WORKING_DIR_NAME=$(basename $(pwd))
 JENKINS_USER=$1
 CHAIN_ID_L2=$2
@@ -36,8 +37,8 @@ install_brownie() {
 add_network() {
    sed -i "s/username/${JENKINS_USER}/;s/ip-address/${IP_ADDRESS}/g" $ENV_FILE_NAME
    URL=$(jq -r .rpcUrls.${JENKINS_USER}_BASE $ENV_FILE_NAME)
-   brownie networks add zkevm-chain-l2 zkEVM-chain-${JENKINS_USER}-l2 host=$URL"l2" chainid=$CHAIN_ID_L2
-   brownie networks add zkevm-chain-l1 zkEVM-chain-${JENKINS_USER}-l1 host=$URL"l1" chainid=$CHAIN_ID_L1
+   $BROWNIE networks add zkevm-chain-l2 zkEVM-chain-${JENKINS_USER}-l2 host=$URL"l2" chainid=$CHAIN_ID_L2
+   $BROWNIE networks add zkevm-chain-l1 zkEVM-chain-${JENKINS_USER}-l1 host=$URL"l1" chainid=$CHAIN_ID_L1
 }
 
 run_brownie () {
@@ -51,8 +52,7 @@ run_brownie_test () {
 }
 
 main() {
-    BROWNIE_EXISTS="/home/$USER/.local/bin/brownie"
-    if [ ! -f $BROWNIE_EXISTS ]; then
+    if [ ! -f $BROWNIE ]; then
         install_pkgs
         install_brownie
         add_network
