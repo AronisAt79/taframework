@@ -86,10 +86,9 @@ def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=
     isIdle,isBusy,tasks = request_prover_tasks(lcl)
     print('Waiting active and queued tasks to finish')
     while not isIdle:
-        while not isIdle:
-            sleep(60)
-            isIdle,isBusy,tasks = request_prover_tasks(lcl)
-            pprint(tasks)
+        sleep(60)
+        isIdle,isBusy,tasks = request_prover_tasks(lcl)
+#        pprint(tasks)
  
     while txNotSent:
         print(f"Submitting transaction with {iterations} calls of worst case opcode ({opCode}) for {circuit} circuit")
