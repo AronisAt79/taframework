@@ -7,9 +7,9 @@ import sys
 
 def request_proof(lcl,block,
         # testenv="REPLICA",
-        retry=True,
+        retry=False,
         circuit="pi",
-        mock=True,
+        mock=False,
         aggregate=False,
         mock_feedback=False
         ):
@@ -33,20 +33,32 @@ def request_proof(lcl,block,
     result = proof_request(proverUrl,mock,aggregate,mock_feedback,int(block),sourceUrl,retry,circuit)
     pprint(result.json())
 
-def request_prover_tasks(lcl):
+def request_prover_tasks(lcl, block=0, _print=False):
     '''
     Standalone Ultility to query prover node(s) for proof tasks status
-
-    No input arguments
-
+    Set the block variable to query the proof status for a submitted block
     example:
 
-     brownie run scripts/globals.py main  queryProverTasks --network zkevmchain
+    This will return all existing tasks (cached, pending, completed) and prover state (idle or busy)
+        #brownie run scripts/globals.py main  queryProverTasks --network zkevmchain
+
+    This will only return the proof task status/result for block 10
+        #brownie run scripts/globals.py main  queryProverTasks 10 --network zkevmchain
     '''
     testenv=lcl['env']['testEnvironment']
     proverUrl = lcl['env']["rpcUrls"][f'{testenv}'"_BASE"]+"prover"
-    result = queryProverTasks(proverUrl)
-    pprint(result.json())
+    if block == 0:
+        isIdle, isBusy, tasks  = queryProverTasks(proverUrl)
+        result = (isIdle, isBusy, tasks)
+        if _print:
+            pprint(result)
+        return isIdle, isBusy, tasks
+    else:
+        blockResult = queryProverTasks(proverUrl,block)
+        result = blockResult
+        if _print:
+            pprint(result)
+        return result
 
 def flush_prover(lcl,cache,pending,completed):
     '''

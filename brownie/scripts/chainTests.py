@@ -2,7 +2,8 @@ from scripts.w3Utils import setupW3Provider, loadContract, getScName, sendTx
 from scripts.debugUtils import getTxTraceByBlock, getTxTraceByHash, getTxTraceFromTxObject, getBlockInfo
 from scripts.prover import proof_request, queryProverTasks, flushTasks
 from scripts.circuitUtils import opCodes, calcTxCosts
-from scripts.tools import request_proof
+from scripts.tools import request_proof, request_prover_tasks
+from time import sleep
 
 from pprint import pprint
 
@@ -43,7 +44,7 @@ def test_calibrateOpCode(lcl, circuit, iterations=100, layer=2):
 
     return iterations
     
-def test_benchProof(lcl,circuit,iterations=100,retry=False, flush=False, layer=2):
+def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=False, layer=2):
     '''
     Test Sequence: 
     1. Checks if there is ongoing proof task via the info method
@@ -59,6 +60,7 @@ def test_benchProof(lcl,circuit,iterations=100,retry=False, flush=False, layer=2
         -   testenv: see environment.json for possible values. Defaults to 'REPLICA'
         -   retry: (bool) defines whether prover reattempts a failed proof. Must be False for test purpose
         -   flush: (bool) use it to clear tasks cache before starting bench
+        -   abort: (bool) set to true if you want to abort the test in case prover is busy with ongoing task
 
     Result:
         - proof and proof generation duration
@@ -80,20 +82,15 @@ def test_benchProof(lcl,circuit,iterations=100,retry=False, flush=False, layer=2
     if flush:
         print("Flushing Tasks")
         flushTasks(proverUrl,True,True,True,1)
-        # tasks = queryProverTasks(proverUrl)
-        # pprint(tasks.json())
-    
-    proverIdle = False
+
+    isIdle,isBusy,tasks = request_prover_tasks(lcl)
     print('Waiting active and queued tasks to finish')
-    while not proverIdle:
-        tasksInfo = queryProverTasks(proverUrl)
-        tasks = tasksInfo.json()['result']['tasks']
-        pprint(tasks)
-        n = [i['options']['block'] for i in tasks if i['result']==None]
-        if len(n) == 0:
-            proverIdle = True
-
-
+    while not isIdle:
+        while not isIdle:
+            sleep(60)
+            isIdle,isBusy,tasks = request_prover_tasks(lcl)
+            pprint(tasks)
+ 
     while txNotSent:
         print(f"Submitting transaction with {iterations} calls of worst case opcode ({opCode}) for {circuit} circuit")
         tx, txNotSent = sendTx(iterations,sc,lcl['owner'])
@@ -104,28 +101,36 @@ def test_benchProof(lcl,circuit,iterations=100,retry=False, flush=False, layer=2
 
     print(f'Sending proof request for block {block} ')
     error = False
-    proof_generated = False
-    while not error and not proof_generated:
-        # r = proof_request(proverUrl,block,sourceUrl,retry)
-        r = request_proof(lcl,block)
+    task_completed = False
+    request_proof(lcl,block)
+    print(f'Submitted proof request for block {block}')
+    while not error and not task_completed:
+        task = request_prover_tasks(lcl,block)
+        task = task[-1]
 
-        print(f'Submitted proof request for block {block}')
-        error = 'error' in r.json().keys()
+        task_completed = bool(task['result'])
+        if task_completed:
+            try:
+                error = 'Err' in task['result'].keys()
+            except:
+                pass
         if error:
-            error_message = r.json()['error']
-        result = r.json()['result']
-        proof_generated = result != None
+            error_message = task['result']['Err']
+        sleep(60)
+    try:
+        print(f'Error: {error_message}')
+    except:
+        pass
 
-    print(f'Error: {error_message}')
     print(f"Proof Request for block {block}:\n")
-    pprint('result')
+    pprint(f'{task["result"]}')
 
-    return result, block
+    return task, block
 
 
 def test_calculateBlockCircuitCosts(lcl, blocknumber, dumpTxTrace=False, layer=2):
     '''
-    papaki paei stin potamia
+    Enter doc strings here
     '''
     testenv=lcl['env']['testEnvironment']
     url = lcl['env']["rpcUrls"][f'{testenv}'"_BASE"]+f"l{layer}"
@@ -135,8 +140,3 @@ def test_calculateBlockCircuitCosts(lcl, blocknumber, dumpTxTrace=False, layer=2
     bl = getBlockInfo(w3,blocknumber)
     txHases = [i['hash'] for i in bl.transactions]
         
-
-
-    # pprint(r)
-    # pprint(r.json())
-    # return r
