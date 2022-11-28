@@ -44,7 +44,7 @@ def test_calibrateOpCode(lcl, circuit, iterations=100, layer=2):
 
     return iterations
     
-def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=False, layer=2):
+def test_benchProof(lcl,circuit,iterations=100, proof_options="", abort=False, flush=False, retry=False, layer=2):
     '''
     Test Sequence: 
     1. Checks if there is ongoing proof task via the info method
@@ -57,7 +57,11 @@ def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=
         -   circuits: EVM, STATE
         -   iterations: the max number of opcode steps that satisfies gasUsed < 300K (exec test_calibrateOpCode
             to get this number)
-        -   testenv: see environment.json for possible values. Defaults to 'REPLICA'
+        -   proof_options: defaults to proofOptions.json, otherwise input a string of the form:
+            "aggregate True circuit super"
+
+            for example:
+                #brownie run scripts/globals.py  main test_benchProof EVM 100 "aggregate True circuit pi" --network zkEVM-chain-maronis-l2
         -   retry: (bool) defines whether prover reattempts a failed proof. Must be False for test purpose
         -   flush: (bool) use it to clear tasks cache before starting bench
         -   abort: (bool) set to true if you want to abort the test in case prover is busy with ongoing task
@@ -88,7 +92,6 @@ def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=
     while not isIdle:
         sleep(60)
         isIdle,isBusy,tasks = request_prover_tasks(lcl)
-#        pprint(tasks)
  
     while txNotSent:
         print(f"Submitting transaction with {iterations} calls of worst case opcode ({opCode}) for {circuit} circuit")
@@ -101,7 +104,7 @@ def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=
     print(f'Sending proof request for block {block} ')
     error = False
     task_completed = False
-    request_proof(lcl,block)
+    request_proof(lcl,block,proof_options)
     print(f'Submitted proof request for block {block}')
     while not error and not task_completed:
         task = request_prover_tasks(lcl,block)
@@ -121,9 +124,6 @@ def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=
         print(f'Error: {error_message}')
     except:
         pass
-
-    #print(f"Proof Request for block {block}:\n")
-    #pprint(f'{task["result"]}')
 
     proofs = task["result"]["Ok"]
 

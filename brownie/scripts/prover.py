@@ -1,13 +1,31 @@
 from scripts.rpcUtils import rpcCall
 from pprint import pprint
 import scripts.commonUtils as cu
+import sys
 
-# def proof_options(options):
-#     opt = options.split()
-#     if len(opt) %2 != 0:
-#         print("Error: Number of inputs must be even")
-#     else:
-#         default_options = cu.loadJson("proof_options")
+def proof_options(proofoptions):
+    try:
+        default_options = cu.loadJson("proofOptions.json")
+    except Exception as exc:
+        print(exc)
+    if proofoptions == "":
+        options = default_options
+    else:
+        opt = proofoptions.split()
+        if len(opt) %2 != 0:
+            print("Error: Number of inputs must be even")
+        else:
+            even_indexes = [j for j in range(len(opt)) if j%2==0]
+            for index in even_indexes:
+                if opt[index] in default_options.keys():
+                    default_options[opt[index]] = opt[index+1]
+                else:
+                    print(f"ERROR: option {opt[index]} is not a valid proofRrequestOptions field")
+                    sys.exit(1)
+
+            options = default_options
+
+    return options
 
 
 def proof_request(proverUrl,mock,aggregate,mock_feedback,block,sourceURL,retry=False,circuit="pi"):
