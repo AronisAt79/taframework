@@ -115,16 +115,30 @@ def test_benchProof(lcl,circuit,iterations=100, abort=False, flush=False, retry=
                 pass
         if error:
             error_message = task['result']['Err']
-        sleep(60)
+        if not task_completed:
+            sleep(60)
     try:
         print(f'Error: {error_message}')
     except:
         pass
 
-    print(f"Proof Request for block {block}:\n")
-    pprint(f'{task["result"]}')
+    #print(f"Proof Request for block {block}:\n")
+    #pprint(f'{task["result"]}')
 
-    return task, block
+    proofs = task["result"]["Ok"]
+
+    metrics = {
+                "Block":block,
+                "Duration": {
+                            "Aggregation" :proofs['aggregation']['duration'],  
+                            "Circuit"     :proofs['circuit']['duration']
+                },
+                "Config": proofs['config']
+            }
+
+    pprint(metrics)
+    return metrics
+
 
 
 def test_calculateBlockCircuitCosts(lcl, blocknumber, dumpTxTrace=False, layer=2):

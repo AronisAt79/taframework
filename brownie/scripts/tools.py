@@ -3,6 +3,7 @@ from scripts.prover import proof_request, queryProverTasks, flushTasks
 from scripts.w3Utils import sendTx, loadContract, setupW3Provider, getScName
 from scripts.circuitUtils import calcTxCosts
 from pprint import pprint
+# import scripts.commonUtils as cu
 import sys
 
 def request_proof(lcl,block,
@@ -15,14 +16,14 @@ def request_proof(lcl,block,
         ):
     '''
     Standalone Ultility to start a proving task for a given block,
-    or return the status/result of a prover task
-
-    Takes in the block number integer, and option Retry flag as boolean
+    
+    Takes in the block number integer, and proof request options as string
 
     example:
 
-     brownie run scripts/globals.py main request_proof 1 --network zkevmchain
+     brownie run scripts/globals.py main request_proof 1 " "--network zkevmchain
     '''
+    # options = cu.loadJson('proofOptions.json')
     testenv=lcl['env']['testEnvironment']
     mock = str(mock).lower()
     aggregate = str(aggregate).lower()
@@ -47,7 +48,7 @@ def request_prover_tasks(lcl, block=0, _print=False):
     '''
     testenv=lcl['env']['testEnvironment']
     proverUrl = lcl['env']["rpcUrls"][f'{testenv}'"_BASE"]+"prover"
-    if block == 0:
+    if int(block) == 0:
         isIdle, isBusy, tasks  = queryProverTasks(proverUrl)
         result = (isIdle, isBusy, tasks)
         if _print:

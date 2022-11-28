@@ -1,5 +1,14 @@
 from scripts.rpcUtils import rpcCall
 from pprint import pprint
+import scripts.commonUtils as cu
+
+# def proof_options(options):
+#     opt = options.split()
+#     if len(opt) %2 != 0:
+#         print("Error: Number of inputs must be even")
+#     else:
+#         default_options = cu.loadJson("proof_options")
+
 
 def proof_request(proverUrl,mock,aggregate,mock_feedback,block,sourceURL,retry=False,circuit="pi"):
     '''
