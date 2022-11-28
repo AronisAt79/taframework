@@ -14,10 +14,10 @@ mv l1-testnet.json $cwd/chain/$d/docker/geth/templates/
 cd zkevm-chain
 
 mv .env.example .env
-sed -i "s|- 8000:8000|- 80:8000|" docker-compose.yml
+sed -i "s|- 8000:8000|- 80:8000|" docker-compose-pub.yml
 sed -i "s|- COORDINATOR_DUMMY_PROVER=\${COORDINATOR_DUMMY_PROVER:-true}|- COORDINATOR_DUMMY_PROVER=\${COORDINATOR_DUMMY_PROVER:-false}|" docker-compose.yml
 sed -i "s|- COORDINATOR_UNSAFE_RPC=\${COORDINATOR_UNSAFE_RPC:-false}|- COORDINATOR_UNSAFE_RPC=\${COORDINATOR_UNSAFE_RPC:-true}|" docker-compose.yml
-DOCKER_BUILDKIT=1 docker compose up -d
+DOCKER_BUILDKIT=1 docker compose -f docker-compose.yml -f docker-compose-pub.yml up -d
 
 cd $cwd
 docker cp nginx.conf zkevm-chain-web-1:/etc/nginx/nginx.conf
