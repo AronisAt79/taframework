@@ -59,9 +59,28 @@ def request_prover_tasks(lcl, block=0, _print=False):
     else:
         blockResult = queryProverTasks(proverUrl,block)
         result = blockResult
+        try:
+            proofs = result[-1]["result"]["Ok"]
+            metrics = {
+            "Block":block,
+            "Duration": {
+                        "Aggregation" :proofs['aggregation']['duration'],  
+                        "Circuit"     :proofs['circuit']['duration']
+            },
+            "Config": proofs['config']
+        }
+        except:
+            try:
+                error = result[-1]["result"]["Err"]
+                metrics = {
+                    "Block": block,
+                    "Error" : error
+                }
+            except:
+                pass
         if _print:
-            pprint(result)
-        return result
+            pprint(metrics)
+        # return result
 
 def flush_prover(lcl,cache,pending,completed):
     '''
