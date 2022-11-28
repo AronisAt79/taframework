@@ -1,38 +1,38 @@
 from scripts.coordinator import fetch_coordinator_config
-from scripts.prover import proof_request, queryProverTasks, flushTasks
+from scripts.prover import proof_request, queryProverTasks, flushTasks,proof_options
 from scripts.w3Utils import sendTx, loadContract, setupW3Provider, getScName
 from scripts.circuitUtils import calcTxCosts
 from pprint import pprint
 # import scripts.commonUtils as cu
 import sys
 
-def request_proof(lcl,block,
-        # testenv="REPLICA",
-        retry=False,
-        circuit="pi",
-        mock=False,
-        aggregate=False,
-        mock_feedback=False
-        ):
+def request_proof(lcl,block,proofoptions=""):
     '''
-    Standalone Ultility to start a proving task for a given block,
-    
-    Takes in the block number integer, and proof request options as string
+    Standalone Utility to start a proving task for a given block,
 
+    Takes in the block number integer, and proof request options (proofoptions) as string
+    Defaults to empty string, proofoptions="" >> defaults (see proofOptions.json) 
+    
     example:
 
-     brownie run scripts/globals.py main request_proof 1 " "--network zkevmchain
+     brownie run scripts/globals.py main request_proof 1 --network zkevmchain
+
+     or 
+
+     #brownie run scripts/globals.py main request_proof 1 "aggregate True retry True circuit pi"--network zkevmchain
     '''
-    # options = cu.loadJson('proofOptions.json')
     testenv=lcl['env']['testEnvironment']
-    mock = str(mock).lower()
-    aggregate = str(aggregate).lower()
-    mock_feedback = str(mock_feedback).lower()
-    retry = str(retry).lower()
     proverUrl = lcl['env']["rpcUrls"][f'{testenv}'"_BASE"]+"prover"
     sourceUrl = lcl['SOURCE_URL']
+
+    options = proof_options(proofoptions)
+    aggregate = str(options['aggregate']).lower()
+    mock_feedback = str(options['mock_feedback']).lower()
+    mock = str(options['mock']).lower()
+    retry = str(options['retry']).lower()
+    circuit = options['circuit']
+
     result = proof_request(proverUrl,mock,aggregate,mock_feedback,int(block),sourceUrl,retry,circuit)
-    pprint(result.json())
 
 def request_prover_tasks(lcl, block=0, _print=False):
     '''
@@ -40,11 +40,13 @@ def request_prover_tasks(lcl, block=0, _print=False):
     Set the block variable to query the proof status for a submitted block
     example:
 
-    This will return all existing tasks (cached, pending, completed) and prover state (idle or busy)
+    This will return all existing tasks' state (Ok/Err/None) (cached, pending, completed) and prover state (idle or busy)
         #brownie run scripts/globals.py main  queryProverTasks --network zkevmchain
 
     This will only return the proof task status/result for block 10
         #brownie run scripts/globals.py main  queryProverTasks 10 --network zkevmchain
+    
+    set _print to True to display the result in stdout
     '''
     testenv=lcl['env']['testEnvironment']
     proverUrl = lcl['env']["rpcUrls"][f'{testenv}'"_BASE"]+"prover"
@@ -119,7 +121,7 @@ def set_config(lcl, params):
     NOTE: a, b, c etc must be keys belonging to the struct returned by get_config
     '''
     params_dict = get_config(lcl,print_result=False)
-    #Create a list with user inputs and validate 
+    #Create a list with user inputs and validate
     p=params.split()
     if len(p)%2 !=0:
         print("Error: Number of inputs must be even")
@@ -141,7 +143,7 @@ def set_config(lcl, params):
                 print(f'{p[index]} : {params_dict[p[index]]} >> {p[index+1]}')
                 params_dict[p[index]] = p[index+1]
                 # print(f'{p[index]}:{p[index+1]}')
-        
+
         del params_dict["params_path"]
         #Create a list from resulting dictionary and format
         params_list = ["[{"]
