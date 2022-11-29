@@ -62,20 +62,26 @@ def request_prover_tasks(lcl, block=0, _print=False):
         try:
             proofs = result[-1]["result"]["Ok"]
             metrics = {
-            "Block":block,
-            "Duration": {
-                        "Aggregation" :proofs['aggregation']['duration'],  
-                        "Circuit"     :proofs['circuit']['duration']
-            },
-            "Config": proofs['config']
-        }
+                    "Block"       : block,
+                    "Aggregation" : {
+                                      "duration" : proofs['aggregation']['duration'],
+                                      "k"        : proofs['aggregation']['k'] 
+                                    }, 
+                    "Circuit"     : {
+                                      "duration" : proofs['circuit']['duration'],
+                                      "k"        : proofs['circuit']['k']
+                                    },      
+                    "Gas"         : proofs['gas'],
+                    "Config"      : proofs['config']
+                    }
+
             if _print:
                 pprint(metrics)
         except:
             try:
                 error = result[-1]["result"]["Err"]
                 metrics = {
-                    "Block": block,
+                    "Block" : block,
                     "Error" : error
                 }
                 if _print:
