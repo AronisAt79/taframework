@@ -81,8 +81,9 @@ def request_prover_tasks(lcl, block=0, _print=False):
                 if _print:
                     pprint(metrics)
             except:
-                pass
-            
+                if _print:
+                    pprint(result)
+
         return result
 
 def flush_prover(lcl,cache,pending,completed):
