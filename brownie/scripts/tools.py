@@ -69,6 +69,8 @@ def request_prover_tasks(lcl, block=0, _print=False):
             },
             "Config": proofs['config']
         }
+            if _print:
+                pprint(metrics)
         except:
             try:
                 error = result[-1]["result"]["Err"]
@@ -76,11 +78,12 @@ def request_prover_tasks(lcl, block=0, _print=False):
                     "Block": block,
                     "Error" : error
                 }
+                if _print:
+                    pprint(metrics)
             except:
                 pass
-        if _print:
-            pprint(metrics)
-        # return result
+            
+        return result
 
 def flush_prover(lcl,cache,pending,completed):
     '''
