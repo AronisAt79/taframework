@@ -206,4 +206,5 @@ def current_block(lcl, layer):
     w3, cid = setupW3Provider(url,testenv,layer)
 
     block = getBlockNumber(w3)
+    print(f"Current Block: {block}")
     return block
