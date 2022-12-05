@@ -81,3 +81,7 @@ def getScName(circuit):
 #             print("failed to get tx trace")
     
 #     return tr
+
+def getBlockNumber(w3provider):
+    block = w3provider.eth.blockNumber
+    return block

@@ -1,6 +1,6 @@
 from scripts.coordinator import fetch_coordinator_config
 from scripts.prover import proof_request, queryProverTasks, flushTasks,proof_options
-from scripts.w3Utils import sendTx, loadContract, setupW3Provider, getScName
+from scripts.w3Utils import sendTx, loadContract, setupW3Provider, getScName, getBlockNumber
 from scripts.circuitUtils import calcTxCosts
 from pprint import pprint
 # import scripts.commonUtils as cu
@@ -199,3 +199,11 @@ def set_config(lcl, params):
 
 def sendTransaction(lcl, layer=2):
     pass
+
+def current_block(lcl, layer):
+    testenv=lcl['env']['testEnvironment']
+    url = lcl['env']["rpcUrls"][f'{testenv}'"_BASE"]+f"l{layer}"
+    w3, cid = setupW3Provider(url,testenv,layer)
+
+    block = getBlockNumber(w3)
+    return block
