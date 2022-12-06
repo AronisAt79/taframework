@@ -361,9 +361,9 @@ func main() {
 			gasprice := EstimateGasPrice(*ethcl, _ctx)
 
 			gasLimitADjusted := AddGasLimit(gaslimit, payloadLength)
-			// fmt.Printf("gasLimitADjusted: %v\n", gasLimitADjusted)
+			fmt.Printf("a: %v\n", gasLimitADjusted)
 			gasLimitADjustedUsed := uint64(1000000)
-			fmt.Printf("a: %v\n", gasLimitADjustedUsed)
+			// fmt.Printf("a: %v\n", gasLimitADjustedUsed)
 			newtxdata := NewTxData(toAddr, *ethcl, _ctx, nonce, amount, gasLimitADjustedUsed, gasprice, txdata)
 			tx := NewTx(newtxdata)
 			signedTx, err := ks.SignTxWithPassphrase(_accounts[si], passw0rd, tx, chainid)
