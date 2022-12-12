@@ -29,8 +29,10 @@ install_pkgs() {
 }
 
 install_brownie() {
-    /home/$USER/.local/bin/pipx install eth-brownie
-    /home/$USER/.local/bin/pipx inject eth-brownie pandas
+#    /home/$USER/.local/bin/pipx install eth-brownie
+#    /home/$USER/.local/bin/pipx inject eth-brownie pandas
+     pip3 install eth-brownie
+     pip3 install pandas
     source ~/.bashrc
 }
 
